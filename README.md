@@ -1,0 +1,262 @@
+# Asset Handoffer
+
+**美术资产交接自动化工具** - 让美术零门槛提交资产到远程仓库
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Version](https://img.shields.io/badge/version-0.9.9-green.svg)](https://github.com/HeBtcd/asset-handoffer)
+
+## 为什么需要这个工具？
+
+### 传统方式
+```
+美术创作完资产后：
+1. 需要学习Git命令
+2. 需要理解Unity项目结构
+3. 需要手动找到正确的目录
+4. 需要记住复杂的提交流程
+5. 遇到冲突不知道如何处理
+
+结果：美术求助程序员，程序员中断工作帮忙
+```
+
+### 使用本工具后
+```
+美术创作完资产后：
+1. 按规范命名文件
+2. 拖到inbox文件夹
+3. 运行一个命令
+
+完成！文件自动到正确位置并提交到远程仓库
+```
+
+## 核心理念
+
+**美术零决策，程序承担风险。**
+
+### 美术视角
+- 不需要学习Git
+- 不需要安装Unity
+- 不需要理解项目结构
+- 不需要处理任何冲突
+- 只需：命名→拖放→一个命令
+
+### 程序员视角
+- 一次配置，全员受益
+- 本地Git仓库，完整版本控制
+- 所有风险由程序员处理（pull后解决冲突）
+- 美术文件自动整理到正确位置
+
+## 工作原理
+
+```
+美术工作区/
+├── config.yaml          # 配置文件（程序员提供）
+├── inbox/               # 📥 美术看得到：拖文件进来
+│   └── Hero_Idle.fbx
+│
+└── .repo/               # 🔒 美术看不到：隐藏的Git仓库
+    ├── .git/
+    ├── Assets/
+    │   └── GameRes/
+    │       └── GameCore/
+    │           └── Characters/
+    │               └── Hero/
+    │                   └── Hero_Idle.fbx  ← 自动放这里
+    └── ProjectSettings/
+```
+
+**工作流程**：
+1. 文件放入inbox
+2. 运行process命令
+3. 工具自动：
+   - 解析文件名（模块、类别、功能）
+   - 移动到.repo对应位置
+   - git add + commit + push
+4. 完成！
+
+**关键**：
+- 美术只看到inbox
+- 本地.repo是完整的Unity项目Git仓库
+- 美术无感知Git的存在
+
+## 快速开始
+
+### 程序员：项目初始化（5分钟）
+
+#### 1. 安装工具
+```bash
+pip install asset-handoffer
+```
+
+#### 2. 生成配置文件
+```bash
+asset-handoffer init
+
+# 交互式输入：
+项目名称: MyGame
+远程仓库仓库URL: https://github.com/team/mygame.git
+Unity资产根路径: Assets/GameRes/
+
+# 生成：mygame.yaml
+```
+
+#### 3. 生成远程仓库 Token
+```
+1. 访问：https://github.com/settings/tokens
+2. Generate new token (classic)
+3. 权限：勾选 repo
+4. 复制Token：ghp_xxxxxxxxxxxx
+```
+
+#### 4. 分发给美术
+```
+发送文件：
+```bash
+asset-handoffer init
+
+# 选项：
+#   --output, -o FILE    输出文件路径
+
+# 示例：
+asset-handoffer init -o project-a.yaml
+```
+
+### `setup` - 设置工作区（美术）
+```bash
+asset-handoffer setup CONFIG_FILE
+
+# 首次使用时运行
+# 会：创建工作区、克隆Git仓库、保存Token
+
+# 示例：
+asset-handoffer setup mygame.yaml
+```
+
+### `process` - 处理文件（美术）
+```bash
+asset-handoffer process CONFIG_FILE [OPTIONS]
+
+# 选项：
+#   --file, -f FILE    指定文件（可多次）
+
+# 示例：
+asset-handoffer process config.yaml              # 处理全部inbox
+asset-handoffer process config.yaml -f a.fbx     # 只处理a.fbx
+asset-handoffer process config.yaml -f a.fbx -f b.png  # 处理多个
+```
+
+### `delete` - 删除文件
+```bash
+asset-handoffer delete PATTERN CONFIG_FILE
+
+# 删除本地仓库中的文件并推送
+
+# 示例：
+asset-handoffer delete "Hero*.fbx" config.yaml
+asset-handoffer delete "OldAssets/*" config.yaml
+```
+
+### `status` - 查看状态
+```bash
+asset-handoffer status CONFIG_FILE
+
+# 显示inbox中待处理的文件
+
+# 示例：
+asset-handoffer status config.yaml
+```
+
+### `update-token` - 更新Token
+```bash
+asset-handoffer update-token CONFIG_FILE
+
+# Token过期时使用
+
+# 示例：
+asset-handoffer update-token config.yaml
+```
+
+## 配置文件
+
+### 配置示例
+```yaml
+# 项目信息
+project:
+  name: "我的游戏"
+  asset_root: "Assets/GameRes/"
+
+# 工作区
+workspace:
+  base: "./"  # 配置文件所在目录
+
+# Git配置
+git:
+  repository: "https://github.com/team/game.git"
+  branch: "main"
+  commit_template: "Update {category}: {feature}"
+
+# 路径生成规则（统一）
+path_template: "{module}/{category}/{feature}/"
+
+# 文件命名规则（正则表达式）
+naming:
+  pattern: "^(?P<module>\\w+)_(?P<category>\\w+)_(?P<feature>[\\w-]+)(_(?P<variant>\\w+))?\\.(?P<ext>\\w+)$"
+  example: "GameCore_Character_Hero_Idle.fbx"
+
+# 语言
+language: "zh-CN"
+```
+
+### 配置说明
+
+#### `project.asset_root`
+Unity资产根路径，通常是`Assets/GameRes/`。
+
+#### `path_template`
+路径生成模板。变量：
+- `{module}` - 模块名
+- `{category}` - 类别
+- `{feature}` - 功能名
+- `{asset_root}` - 资产根路径
+
+示例：`{module}/{category}/{feature}/`  
+生成：`GameCore/Character/Hero/`
+
+#### `naming.pattern`
+正则表达式，必须包含命名组：
+- `module` - 必需
+- `category` - 必需  
+- `feature` - 必需
+- `variant` - 可选
+- `ext` - 必需
+
+#### `git.commit_template`
+提交消息模板。变量：
+- `{module}` - 模块名
+- `{category}` - 类别
+- `{feature}` - 功能名
+
+## 常见问题
+
+### Q: 美术需要安装Unity吗？
+**A**: 不需要。美术电脑上只需要Python和这个工具。
+
+### Q: 美术需要学Git吗？
+**A**: 不需要。工具会自动处理所有Git操作。
+
+### Q: 文件冲突怎么办？
+**A**: 自动覆盖。程序员pull后看到冲突再处理。美术不需要关心。
+
+### Q: 支持大文件吗？
+**A**: 支持。使用真实的Git，可以配合Git LFS处理大文件。
+
+### Q: Token过期了怎么办？
+**A**: 运行`asset-handoffer update-token config.yaml`更新即可。
+
+### Q: 如何撤销美术的提交？
+**A**: 程序员使用Git回滚，或使用`asset-handoffer delete`命令。
+
+## 贡献
+
+欢迎 Issue & PR!

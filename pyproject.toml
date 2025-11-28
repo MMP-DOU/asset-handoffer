@@ -1,0 +1,37 @@
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "asset-handoffer"
+version = "0.9.9"
+description = "美术资产交接自动化工具"
+readme = "README.md"
+license = "MIT"
+authors = ["Refactor <refactor.op@gmail.com>"]
+keywords = ["unity", "asset", "pipeline", "git", "automation"]
+homepage = "https://github.com/HeBtcd/asset-handoffer"
+repository = "https://github.com/HeBtcd/asset-handoffer"
+packages = [{ include = "asset_handoffer", from = "src" }]
+include = [
+  { path = "src/asset_handoffer/templates/*.yaml", format = "wheel" },
+  { path = "src/asset_handoffer/templates/*.yaml", format = "sdist" },
+  { path = "src/asset_handoffer/locales/*.yaml", format = "wheel" },
+  { path = "src/asset_handoffer/locales/*.yaml", format = "sdist" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+typer = ">=0.9.0"
+pyyaml = ">=6.0"
+cryptography = ">=41.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=7.0"
+pytest-cov = ">=4.0"
+black = ">=23.0"
+mypy = ">=1.0"
+types-PyYAML = ">=6.0.12"
+
+[tool.poetry.scripts]
+asset-handoffer = "asset_handoffer.cli:main"
