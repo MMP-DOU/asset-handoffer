@@ -27,27 +27,20 @@ class GitRepo:
         """检查仓库是否已存在"""
         return (self.repo_path / ".git").exists()
     
-    def clone(self, git_url: str, token: str, branch: str = "main"):
+    def clone(self, git_url: str, branch: str = "main"):
         """Clone仓库
         
         Args:
             git_url: GitHub仓库URL
-            token: Personal Access Token
             branch: 分支名
         """
         if self.exists():
             raise GitError(f"仓库已存在：{self.repo_path}")
         
-        # 构造带token的URL
-        if "@" not in git_url:  # 避免重复添加token
-            auth_url = git_url.replace("https://", f"https://{token}@")
-        else:
-            auth_url = git_url
-        
         try:
             # Clone
             subprocess.run(
-                ['git', 'clone', '-b', branch, '--single-branch', auth_url, str(self.repo_path)],
+                ['git', 'clone', '-b', branch, '--single-branch', git_url, str(self.repo_path)],
                 check=True,
                 capture_output=True,
                 text=True

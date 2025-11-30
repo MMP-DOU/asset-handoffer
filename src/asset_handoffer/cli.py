@@ -7,7 +7,7 @@ from getpass import getpass
 from .core.config import Config, ConfigError
 from .core.git_repo import GitRepo, GitError
 from .core.processor import FileProcessor
-from .storage.token_storage import TokenStorage
+
 from .i18n import get_messages
 
 app = typer.Typer(
@@ -38,9 +38,8 @@ def init(
         
         print(f"已生成配置文件：{config_file}")
         print("\n下一步：")
-        print("1. 生成 GitHub Personal Access Token（权限：repo）")
-        print("   访问：https://github.com/settings/tokens")
-        print("\n2. 将配置文件发给美术人员")
+        print("1. 确保已配置 Git 凭据（SSH 或 Credential Manager）")
+        print("2. 将配置文件发给美术人员")
         print(f"\n3. 美术人员运行：asset-handoffer setup {config_file}")
         
     except Exception as e:
@@ -55,7 +54,7 @@ def setup(config_file: Path):
     首次使用时运行此命令，将：
     1. 创建工作区目录（inbox等）
     2. 克隆Git仓库到本地
-    3. 保存GitHub Token
+    2. 克隆Git仓库到本地
     """
     try:
         # 加载配置
@@ -88,22 +87,14 @@ def setup(config_file: Path):
             repo_exists = False
         
         if not repo_exists or not repo.exists():
-            # 请求Token
-            token = getpass(f"{m.t('setup.input_token', default='请输入GitHub Token')}: ")
-            
             # Clone仓库
             print("\n正在克隆仓库...")
             try:
-                repo.clone(config.git_url, token, config.git_branch)
+                repo.clone(config.git_url, config.git_branch)
                 print(f"仓库已克隆到：{config.repo}")
             except GitError as e:
                 print(f"错误：克隆失败：{e}")
                 raise typer.Exit(1)
-            
-            # 保存Token
-            token_storage = TokenStorage()
-            token_storage.save_token(config.project_name, token)
-            print("Token已保存")
         
         print("\n" + "=" * 60)
         print("  设置完成")
@@ -253,23 +244,7 @@ def status(config_file: Path = typer.Argument(..., help="配置文件路径")):
         raise typer.Exit(1)
 
 
-@app.command()
-def update_token(config_file: Path):
-    """更新GitHub Token"""
-    try:
-        config = Config.load(config_file)
-        
-        print(f"项目：{config.project_name}")
-        token = getpass("请输入新的GitHub Token: ")
-        
-        token_storage = TokenStorage()
-        token_storage.save_token(config.project_name, token)
-        
-        print("Token已更新")
-        
-    except Exception as e:
-        print(f"错误：{e}")
-        raise typer.Exit(1)
+
 
 
 def main():

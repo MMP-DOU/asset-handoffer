@@ -10,7 +10,7 @@
 
 """
 
-__version__ = "0.9.9"
+__version__ = "0.9.10"
 __author__ = "Refactor"
 __email__ = "refactor.op@gmail.com"
 
@@ -19,7 +19,7 @@ from .core.config import Config
 from .core.git_repo import GitRepo
 from .core.processor import FileProcessor
 from .parsers import FilenameParser, ParsedFilename
-from .storage.token_storage import TokenStorage
+
 
 # 导出异常（统一从 exceptions 模块）
 from .exceptions import (
@@ -47,7 +47,6 @@ __all__ = [
     'GitRepo',
     'FileProcessor',
     'FilenameParser',
-    'TokenStorage',
     
     # 数据模型
     'ParsedFilename',
