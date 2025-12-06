@@ -68,7 +68,7 @@ def setup(config_file: Path):
         config.ensure_dirs()
         print(m.t('setup.inbox_dir', path=config.inbox))
         
-        repo = GitRepo(config.repo, m)
+        repo = GitRepo(config.repo, m, config.git_token)
         
         if repo.exists():
             print(m.t('setup.repo_exists_warning', path=config.repo))
@@ -176,7 +176,7 @@ def delete(
     try:
         config = Config.load(config_file)
         m = config.messages
-        repo = GitRepo(config.repo, m)
+        repo = GitRepo(config.repo, m, config.git_token)
         
         matches = list(config.repo.rglob(pattern))
         

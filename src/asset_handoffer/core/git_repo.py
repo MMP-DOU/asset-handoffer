@@ -1,8 +1,10 @@
 """Git仓库管理"""
 
 import subprocess
+import os
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlparse, urlunparse
 
 from ..exceptions import GitError
 from ..i18n import Messages
@@ -11,20 +13,42 @@ from ..i18n import Messages
 class GitRepo:
     """Git仓库管理"""
     
-    def __init__(self, repo_path: Path, messages: Messages = None):
+    def __init__(self, repo_path: Path, messages: Messages = None, token: str = None):
         self.repo_path = repo_path
         self.messages = messages or Messages('zh-CN')
+        self.token = token or os.getenv('GITHUB_TOKEN')
     
     def exists(self) -> bool:
         return (self.repo_path / ".git").exists()
+    
+    def _inject_token(self, git_url: str) -> str:
+        """将 token 注入到 Git URL"""
+        if not self.token:
+            return git_url
+        
+        parsed = urlparse(git_url)
+        if parsed.scheme not in ('https', 'http'):
+            return git_url
+        
+        netloc_with_token = f"{self.token}@{parsed.netloc}"
+        return urlunparse((
+            parsed.scheme,
+            netloc_with_token,
+            parsed.path,
+            parsed.params,
+            parsed.query,
+            parsed.fragment
+        ))
     
     def clone(self, git_url: str, branch: str = "main"):
         if self.exists():
             raise GitError(self.messages.t('git.repo_exists', path=self.repo_path))
         
+        url_with_token = self._inject_token(git_url)
+        
         try:
             subprocess.run(
-                ['git', 'clone', '-b', branch, '--single-branch', git_url, str(self.repo_path)],
+                ['git', 'clone', '-b', branch, '--single-branch', url_with_token, str(self.repo_path)],
                 check=True,
                 capture_output=True,
                 text=True

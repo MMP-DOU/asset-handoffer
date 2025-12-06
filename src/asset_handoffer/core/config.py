@@ -79,16 +79,20 @@ class Config:
         return self.data.get('git', {}).get('branch', 'main')
     
     @property
+    def git_token(self) -> str:
+        return self.data.get('git', {}).get('token', '')
+    
+    @property
     def git_commit_template(self) -> str:
         return self.data.get('git', {}).get('commit_message', 'Update: {name}')
     
     @property
     def asset_root(self) -> str:
-        return self.data.get('asset_root', 'Assets/GameRes/')
+        return self.data.get('asset_root', '')
     
     @property
     def path_template(self) -> str:
-        return self.data['path_template']
+        return self.data.get('path_template', '')
     
     @property
     def naming_pattern(self) -> str:

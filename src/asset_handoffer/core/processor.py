@@ -19,7 +19,7 @@ class FileProcessor:
         self.messages = config.messages
         self.parser = FilenameParser(config.naming_pattern, self.messages)
         self.path_gen = PathGenerator(config.path_template, config.asset_root, self.messages)
-        self.repo = GitRepo(config.repo, self.messages)
+        self.repo = GitRepo(config.repo, self.messages, config.git_token)
     
     def process(self, file_path: Path) -> bool:
         try:
