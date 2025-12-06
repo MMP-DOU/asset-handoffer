@@ -1,5 +1,0 @@
-"""常量定义"""
-
-DEFAULT_GIT_BRANCH = "main"
-DEFAULT_GIT_REMOTE = "origin"
-DEFAULT_LANGUAGE = "zh-CN"
