@@ -16,7 +16,7 @@ class PathGenerator:
     
     def generate(self, parsed: ParsedFilename, repo_base: Path) -> Path:
         try:
-            rel_dir = self.path_template.format(**parsed.groups)
+            rel_path = self.path_template.format(**parsed.groups)
         except KeyError as e:
             available = ', '.join(parsed.groups.keys())
             raise ProcessError(
@@ -25,7 +25,11 @@ class PathGenerator:
                               available=available)
             )
         
-        full_dir = repo_base / self.asset_root / rel_dir
-        full_path = full_dir / parsed.original_name
+        full_path = repo_base / self.asset_root / rel_path
         
-        return full_path
+        if not rel_path.endswith(('.', '/')):
+            full_path.parent.mkdir(parents=True, exist_ok=True)
+            return full_path
+        
+        full_path.mkdir(parents=True, exist_ok=True)
+        return full_path / parsed.original_name

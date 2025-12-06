@@ -22,7 +22,6 @@ class GitRepo:
         return (self.repo_path / ".git").exists()
     
     def _inject_token(self, git_url: str) -> str:
-        """将 token 注入到 Git URL"""
         if not self.token:
             return git_url
         
@@ -79,8 +78,16 @@ class GitRepo:
             raise GitError(self.messages.t('git.clone_failed', error=e.stderr))
     
     def pull(self):
+        env = self._get_git_env()
         try:
-            self._run_git(['pull'])
+            subprocess.run(
+                ['git', 'pull'],
+                cwd=str(self.repo_path),
+                check=True,
+                capture_output=True,
+                text=True,
+                env=env
+            )
         except subprocess.CalledProcessError as e:
             raise GitError(self.messages.t('git.pull_failed_new', error=e.stderr))
     
@@ -102,11 +109,26 @@ class GitRepo:
             raise GitError(self.messages.t('git.commit_failed', error=e.stderr))
     
     def push(self, branch: Optional[str] = None):
+        env = self._get_git_env()
         try:
             if branch:
-                self._run_git(['push', 'origin', branch])
+                subprocess.run(
+                    ['git', 'push', 'origin', branch],
+                    cwd=str(self.repo_path),
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                    env=env
+                )
             else:
-                self._run_git(['push'])
+                subprocess.run(
+                    ['git', 'push'],
+                    cwd=str(self.repo_path),
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                    env=env
+                )
         except subprocess.CalledProcessError as e:
             raise GitError(self.messages.t('git.push_failed_new', error=e.stderr))
     
@@ -118,6 +140,13 @@ class GitRepo:
             raise GitError(self.messages.t('git.file_not_in_repo', path=file_path))
         except subprocess.CalledProcessError as e:
             raise GitError(self.messages.t('git.push_failed_new', error=e.stderr))
+    
+    def _get_git_env(self):
+        env = os.environ.copy()
+        if self.token:
+            env['GIT_TERMINAL_PROMPT'] = '0'
+            env['GCM_INTERACTIVE'] = 'never'
+        return env
     
     def _run_git(self, args: list) -> subprocess.CompletedProcess:
         return subprocess.run(

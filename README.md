@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Version](https://img.shields.io/badge/version-0.9.15-green.svg)](https://github.com/HeBtcd/asset-handoffer)
+[![Version](https://img.shields.io/badge/version-0.9.16-green.svg)](https://github.com/HeBtcd/asset-handoffer)
 
 ## 为什么需要这个工具？
 
@@ -102,7 +102,31 @@ Unity资产根路径: Assets/GameRes/
 #### 3. 编辑配置（可选）
 根据项目需求自定义命名规则和路径模板。
 
-#### 4. 分发给美术
+#### 4. 配置 GitHub Token（推荐）
+
+**为美术提供零门槛访问：**
+
+美术人员无需注册 GitHub 账号，程序员创建 Fine-grained Token 即可：
+
+1. GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens
+2. 创建新 token，权限设置：
+   - Repository access: 选择你的项目仓库
+   - Permissions: `Contents: Read and write`
+3. 将 token 添加到配置：
+
+```yaml
+git:
+  repository: "https://github.com/team/mygame.git"
+  token: "github_pat_xxxxxxxxxxxx"  # 美术专用token
+```
+
+**优势：**
+- ✅ 美术无需GitHub账号
+- ✅ 可随时撤销，不影响程序员账号
+- ✅ 精细权限控制
+- ✅ 零弹窗，自动认证
+
+#### 5. 分发给美术
 将生成的 `config.yaml` 发给美术人员。
 
 ### 美术：设置和使用（3分钟）
@@ -297,7 +321,7 @@ Unity资产根路径，通常是 `Assets/GameRes/`。
 **A**: 程序员使用Git回滚，或使用`asset-handoffer delete`命令。
 
 ### Q: 命名规则可以自定义吗？
-**A**: 完全可以！0.9.15版本支持完全自定义的命名规则，不再限制字段名。
+**A**: 完全可以！0.9.16版本支持完全自定义的命名规则，不再限制字段名。
 
 ## 贡献
 
